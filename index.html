@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C.A.R.E. — Conversational Admission & Response Engine</title>
+  <meta name="description" content="AI-powered voice-based emergency patient intake system supporting Hindi and English." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+  <!-- ═══════════════════ SCREEN 1: KIOSK HOME ═══════════════════ -->
+  <section id="home-screen" class="screen active">
+    <div class="home-bg-orb home-bg-orb--1"></div>
+    <div class="home-bg-orb home-bg-orb--2"></div>
+
+    <header class="home-header">
+      <div class="logo-mark" ondblclick="openLogin('settings')" title="Double-click for admin settings" style="cursor: pointer;">
+        <img src="care-logo.png" alt="CARE" class="logo-icon" />
+        <span class="logo-text">C.A.R.E.</span>
+      </div>
+      <div class="home-time" id="home-time">10:24 AM</div>
+    </header>
+
+    <div class="home-content">
+      <!-- Friendly smiley face -->
+      <div class="smiley-face" id="smiley-face">
+        <div class="smiley-eye smiley-eye--left"></div>
+        <div class="smiley-eye smiley-eye--right"></div>
+        <div class="smiley-mouth"></div>
+      </div>
+
+      <h1 class="home-greeting" id="home-greeting">Hi, how can I help?</h1>
+      <p class="home-subtext">Everything will be fine. Just speak naturally.</p>
+
+      <!-- Voice waveform animation -->
+      <div class="waveform" id="home-waveform">
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+      </div>
+
+      <!-- Big mic button -->
+      <button class="home-mic-btn" id="home-mic-btn" onclick="startIntakeFromHome()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </button>
+
+      <!-- Action tiles -->
+      <div class="home-tiles">
+        <button class="home-tile" onclick="startIntakeFromHome()">
+          <svg class="tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+            <path d="M9 14h6"/><path d="M9 18h6"/><path d="M9 10h6"/>
+          </svg>
+          <span>Register Visit</span>
+        </button>
+        <button class="home-tile" onclick="openScanner('quick')">
+          <svg class="tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span>Quick Scan</span>
+        </button>
+        <button class="home-tile" onclick="openLogin('dashboard')">
+          <svg class="tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span>Staff Dashboard</span>
+        </button>
+      </div>
+    </div>
+
+    <footer class="home-footer">
+      <span>Speak in Hindi, English, Tamil, Bengali or any Indian language</span>
+      <span class="footer-sep">·</span>
+      <span>Team Starwars — Health-a-thon 2026</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════ SCREEN 2: PATIENT INTAKE ═══════════════════ -->
+  <section id="patient-screen" class="screen">
+    <!-- Top bar -->
+    <div class="patient-topbar">
+      <button class="btn-back" onclick="confirmExit()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+      <div class="topbar-center">
+        <img src="care-logo.png" alt="CARE" class="logo-sm" />
+        <span class="topbar-title">C.A.R.E. Intake</span>
+      </div>
+      <div class="lang-selector">
+        <button id="lang-hi" class="lang-btn" onclick="setLanguage('hi-IN')">HI</button>
+        <button id="lang-en" class="lang-btn" onclick="setLanguage('en-IN')">EN</button>
+        <button id="lang-ta" class="lang-btn" onclick="setLanguage('ta-IN')">TA</button>
+        <button id="lang-bn" class="lang-btn" onclick="setLanguage('bn-IN')">BN</button>
+        <button id="lang-auto" class="lang-btn active" onclick="setLanguage('auto')">Auto</button>
+      </div>
+    </div>
+
+    <!-- Mini smiley -->
+    <div class="mini-smiley-bar" id="mini-smiley-bar">
+      <div class="mini-smiley">
+        <div class="ms-eye"></div>
+        <div class="ms-eye"></div>
+        <div class="ms-mouth"></div>
+      </div>
+      <div class="mini-smiley-text" id="mini-smiley-text">Listening...</div>
+    </div>
+
+    <!-- Chat area -->
+    <div class="chat-container" id="chat-container">
+      <div class="chat-messages" id="chat-messages"></div>
+    </div>
+
+    <!-- Voice input area -->
+    <div class="voice-input-area">
+      <div class="voice-status" id="voice-status">
+        <span class="status-dot"></span>
+        <span id="voice-status-text">Tap the mic or start speaking</span>
+      </div>
+
+      <div class="voice-controls">
+        <button class="scan-pill" id="btn-scan" onclick="openScanner()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/>
+          </svg>
+          Scan Prescription
+        </button>
+
+        <button id="btn-voice" class="voice-btn" onclick="toggleVoice()">
+          <div class="voice-btn-ring"></div>
+          <svg class="voice-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
+
+        <button class="skip-pill" id="btn-skip" onclick="skipQuestion()">
+          Skip
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="transcript-preview" id="transcript-preview"></div>
+      <div class="type-fallback">
+        <input type="text" id="text-input" placeholder="Or type your answer here..." class="text-input" />
+        <button class="send-btn" onclick="submitTextInput()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ SCAN MODAL ═══════════════════ -->
+  <div id="scan-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Scan Prescription or Report</h3>
+        <button class="btn-close" onclick="closeScanner()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="scan-body">
+        <div id="scan-upload-area" class="scan-upload-area">
+          <div class="scan-options">
+            <label class="scan-option">
+              <input type="file" accept="image/*" capture="environment" id="scan-camera-input" class="sr-only" onchange="handleScanFile(event)" />
+              <svg class="scan-opt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+              <span>Take Photo</span>
+              <span class="scan-option-sub">Open camera</span>
+            </label>
+            <label class="scan-option">
+              <input type="file" accept="image/*" id="scan-file-input" class="sr-only" onchange="handleScanFile(event)" />
+              <svg class="scan-opt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+              </svg>
+              <span>Upload Image</span>
+              <span class="scan-option-sub">From gallery</span>
+            </label>
+          </div>
+          <p class="scan-hint">Supports printed and handwritten prescriptions</p>
+        </div>
+        <div id="scan-preview-area" class="scan-preview-area hidden">
+          <div class="scan-image-wrap"><img id="scan-preview-img" class="scan-preview-img" alt="Scanned document" /></div>
+          <div id="scan-processing" class="scan-processing hidden">
+            <div class="scan-spinner"></div>
+            <p id="scan-progress-text">Initializing OCR engine...</p>
+            <div class="scan-progress-bar"><div class="scan-progress-fill" id="scan-progress-fill"></div></div>
+          </div>
+          <div id="scan-results" class="scan-results hidden">
+            <h4>Extracted Information</h4>
+            <div id="scan-results-content" class="scan-results-content"></div>
+            <div class="scan-results-actions">
+              <button id="scan-accept-btn" class="btn-primary" onclick="acceptScanResults()">Accept & Add to Record</button>
+              <button class="btn-secondary" onclick="retryScan()">Scan Again</button>
+            </div>
+          </div>
+          <div id="scan-raw-text" class="scan-raw-text hidden">
+            <h4>Raw OCR Text</h4>
+            <pre id="scan-raw-content"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SCREEN 3: HOSPITAL DASHBOARD ═══════════════════ -->
+  <section id="dashboard-screen" class="screen">
+    <div class="dash-topbar">
+      <button class="btn-back" onclick="showScreen('home-screen')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+      <div class="topbar-center">
+        <img src="care-logo.png" alt="CARE" class="logo-sm" />
+        <span class="topbar-title">Staff Dashboard</span>
+      </div>
+      <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+    </div>
+
+    <div class="dash-body">
+      <div class="dash-sidebar">
+        <h3 class="dash-section-title">Incoming Patients</h3>
+        <div id="patient-list" class="patient-list">
+          <div class="empty-state" id="empty-patient-list">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="48" height="48">
+              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+              <rect x="9" y="3" width="6" height="4" rx="1"/>
+            </svg>
+            <p>No active intakes</p>
+            <p class="empty-sub">Start a patient intake to see data here</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-main">
+        <div id="dash-detail-empty" class="dash-detail-empty">
+          <svg class="detail-empty-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="64" height="64">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          <h3>Select a patient to view details</h3>
+          <p>Patient data appears here in real-time</p>
+        </div>
+
+        <div id="dash-detail" class="dash-detail hidden">
+          <div class="detail-header">
+            <div class="detail-avatar" id="detail-avatar">?</div>
+            <div class="detail-header-info">
+              <h2 id="detail-name">—</h2>
+              <div class="detail-meta">
+                <span id="detail-age">—</span>
+                <span class="meta-sep">·</span>
+                <span id="detail-gender">—</span>
+                <span class="meta-sep">·</span>
+                <span id="detail-time">—</span>
+              </div>
+            </div>
+            <div class="detail-priority" id="detail-priority">INTAKE IN PROGRESS</div>
+          </div>
+
+          <div class="dash-actions" id="dash-actions">
+            <div class="input-group">
+              <label>Assigned Doctor</label>
+              <input type="text" id="assign-doctor" class="text-input" placeholder="e.g. Dr. Sharma" />
+            </div>
+            <div class="input-group">
+              <label>Room / Bed No.</label>
+              <input type="text" id="assign-room" class="text-input" placeholder="e.g. Ward A, Bed 3" />
+            </div>
+            <button class="btn-primary" onclick="saveStaffAssignments()">Save Update</button>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-card" id="card-complaint"><div class="detail-card-header"><span>Chief Complaint</span></div><p class="detail-card-value" id="val-complaint">Awaiting...</p></div>
+            <div class="detail-card" id="card-onset"><div class="detail-card-header"><span>Symptom Onset</span></div><p class="detail-card-value" id="val-onset">Awaiting...</p></div>
+            <div class="detail-card" id="card-pain"><div class="detail-card-header"><span>Pain Level</span></div><p class="detail-card-value" id="val-pain">Awaiting...</p></div>
+            <div class="detail-card" id="card-history"><div class="detail-card-header"><span>Medical History</span></div><p class="detail-card-value" id="val-history">Awaiting...</p></div>
+            <div class="detail-card" id="card-allergies"><div class="detail-card-header"><span>Allergies</span></div><p class="detail-card-value" id="val-allergies">Awaiting...</p></div>
+            <div class="detail-card" id="card-medications"><div class="detail-card-header"><span>Current Medications</span></div><p class="detail-card-value" id="val-medications">Awaiting...</p></div>
+            <div class="detail-card" id="card-contact"><div class="detail-card-header"><span>Emergency Contact</span></div><p class="detail-card-value" id="val-contact">Awaiting...</p></div>
+            <div class="detail-card" id="card-relation"><div class="detail-card-header"><span>Respondent</span></div><p class="detail-card-value" id="val-relation">Awaiting...</p></div>
+            <div class="detail-card" id="card-prescription" style="display:none;"><div class="detail-card-header"><span>Scanned Prescription</span></div><div class="detail-card-value" id="val-prescription">—</div></div>
+            <div class="detail-card detail-card--full" id="card-transcript"><div class="detail-card-header"><span>Voice Transcript</span></div><div class="detail-card-value transcript-log" id="val-transcript">Waiting for data...</div></div>
+          </div>
+
+          <div class="intake-progress">
+            <div class="progress-label"><span>Intake Progress</span><span id="progress-pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast-container" class="toast-container"></div>
+  
+  <!-- ═══════════════════ AI SETTINGS MODAL ═══════════════════ -->
+  <div id="ai-settings-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>AI Vision Settings (Admin)</h3>
+        <button class="btn-close" onclick="closeAISettings()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="scan-body">
+        <p style="font-size: 0.88rem; margin-bottom: 16px;">Configure API keys for C.A.R.E.'s AI features.</p>
+        
+        <label style="font-size: 0.8rem; font-weight: 600; color: #64748b;">Groq API Key (For Voice Chat)</label>
+        <input type="password" id="groq-api-key" class="text-input" placeholder="gsk_..." style="width: 100%; margin-bottom: 16px; margin-top: 4px;" />
+        
+        <label style="font-size: 0.8rem; font-weight: 600; color: #64748b;">OCR.space API Key (For Scanning — 100% Free, No Card!)</label>
+        <input type="password" id="ocrspace-api-key" class="text-input" placeholder="K1234567890..." style="width: 100%; margin-bottom: 8px; margin-top: 4px;" />
+        <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 24px;">Get your free key at <a href="https://ocr.space/ocrapi/freekey" target="_blank" style="color: #6366f1;">ocr.space/ocrapi/freekey</a> — 25,000 scans/month free!</p>
+        
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button class="btn-secondary" onclick="closeAISettings()">Cancel</button>
+          <button class="btn-primary" onclick="saveAISettings()">Save API Key</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ LOGIN MODAL ═══════════════════ -->
+  <div id="login-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 350px;">
+      <div class="modal-header">
+        <h3>Staff Authentication</h3>
+        <button class="btn-close" onclick="closeLogin()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="scan-body" style="padding: 20px;">
+        <div class="input-group">
+          <label>Hospital ID / Username</label>
+          <input type="text" id="login-user" placeholder="Enter Hospital ID" class="dash-input" />
+        </div>
+        <div class="input-group" style="margin-top: 15px;">
+          <label>Password</label>
+          <input type="password" id="login-pass" placeholder="Enter Password" class="dash-input" />
+        </div>
+        <p id="login-error" style="color: #e53e3e; font-size: 0.85rem; margin-top: 10px; display: none;">Invalid credentials.</p>
+        <button class="btn-primary" style="width: 100%; margin-top: 20px;" onclick="verifyLogin()">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=51"></script>
+</body>
+</html>
