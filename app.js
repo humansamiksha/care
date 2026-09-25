@@ -975,7 +975,10 @@ function retryScan() {
 function initBroadcast() {
   try {
     APP.broadcastChannel = new BroadcastChannel('care-intake');
-    APP.broadcastChannel.onmessage = (e) => { if (e.data.type === 'patient-update') handlePatientUpdate(e.data.patient); };
+    APP.broadcastChannel.onmessage = (e) => { 
+      if (e.data.type === 'patient-update') handlePatientUpdate(e.data.patient); 
+      if (e.data.type === 'patient-delete') refreshDashboard();
+    };
   } catch (e) {
     window.addEventListener('storage', (e) => { if (e.key === 'care-patients') refreshDashboard(); });
   }
@@ -1138,6 +1141,26 @@ function saveStaffAssignments() {
     
     showToast('Patient assignment updated successfully', 'success');
   }
+}
+
+function deletePatientRecord() {
+  if (!APP.selectedPatientId) return;
+  if (!confirm("Are you sure you want to permanently delete this patient record?")) return;
+  
+  let patients = JSON.parse(localStorage.getItem('care-patients') || '[]');
+  patients = patients.filter(p => p.id !== APP.selectedPatientId);
+  
+  APP.allPatients = patients;
+  localStorage.setItem('care-patients', JSON.stringify(patients));
+  
+  APP.selectedPatientId = null;
+  refreshDashboard();
+  
+  if (APP.broadcastChannel) { 
+    try { APP.broadcastChannel.postMessage({ type: 'patient-delete' }); } catch (e) {} 
+  }
+  
+  showToast('Patient record deleted', 'success');
 }
 
 /* ── Toasts ───────────────────────────────────────────────── */
